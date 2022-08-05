@@ -24,6 +24,8 @@ public class Request {
 
 	private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
 
+	private RequestHeader requestHeader;
+
 	public RequestLine handleUserRequest(InputStream in) throws IOException {
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
 
@@ -44,32 +46,30 @@ public class Request {
 
 		//2.RequestHeaders
 		List<String> requestHeaders = new ArrayList<>();
+		int contentLength = 0;
+		// TODO : "".equals(line) 일 때까지 읽는 이유
 		while (!"".equals(line)) {
 			line = bufferedReader.readLine();
 			log.debug("requestHeader: {}", line);
 
-			if (!"".equals(line)) {
-				requestHeaders.add(line);
+			if (line.equals("Content-Length")) {
+				contentLength = getContentLength(line);
 			}
+			requestHeaders.add(line);
 
+			//TODO : 이거 필요없을 것 같은데 , 과거의 내가 왜 해논걸까?
 			if (line == null) {
 				return requestHeader.getRequestLine();
 			}
 		}
 		requestHeader.setRequestHeaders(requestHeaders);
 
-//		line = bufferedReader.readLine();
-//		List<String> body = new ArrayList<>();
-//		while (!"".equals(line)) {
-//			if (line == null) {
-//				break;
-//			}
-//			body.add(line);
-//			line = bufferedReader.readLine();
-//		}
-//		requestHeader.setBody(body);
-
 		return requestHeader.getRequestLine();
+	}
+
+	private int getContentLength(String line) {
+		String[] headerTokens = line.split(":");
+		return Integer.parseInt(headerTokens[1].trim());
 	}
 
 	private void processHttpMethod(RequestLine requestLine) {
@@ -113,7 +113,8 @@ public class Request {
 
 		DataBase.addUser(user);
 		DataBase.findAll().stream()
-			.forEach(userInDatabase -> log.debug("**Database.findAll() : {}", userInDatabase.toString()));
+			.forEach(userInDatabase -> log.debug("**Database.findAll() : {}",
+				userInDatabase.toString()));
 		//TODO : index.html로 redirection 되도록 처리해야하지 않을까? 요구사항에 없으니 패스
 	}
 
