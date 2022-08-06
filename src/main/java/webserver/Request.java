@@ -5,7 +5,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -16,6 +15,7 @@ import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.HttpRequestUtils;
+import util.IOUtils;
 import webserver.domain.HttpMethod;
 import webserver.domain.RequestHeader;
 import webserver.domain.RequestLine;
@@ -25,17 +25,18 @@ public class Request {
 	private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
 
 	private RequestHeader requestHeader;
+	private int contentLength = 0;
 
 	public RequestLine handleUserRequest(InputStream in) throws IOException {
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
 
-		RequestLine requestLine = parseHeader(bufferedReader);
-		processHttpMethod(requestLine);
+		parseHeader(bufferedReader);
+		processHttpMethod(bufferedReader);
 
-		return requestLine;
+		return requestHeader.getRequestLine();
 	}
 
-	private RequestLine parseHeader(BufferedReader bufferedReader)
+	private void parseHeader(BufferedReader bufferedReader)
 		throws IOException {
 		RequestHeader requestHeader = new RequestHeader();
 
@@ -46,7 +47,6 @@ public class Request {
 
 		//2.RequestHeaders
 		List<String> requestHeaders = new ArrayList<>();
-		int contentLength = 0;
 		// TODO : "".equals(line) 일 때까지 읽는 이유
 		while (!"".equals(line)) {
 			line = bufferedReader.readLine();
@@ -56,15 +56,9 @@ public class Request {
 				contentLength = getContentLength(line);
 			}
 			requestHeaders.add(line);
-
-			//TODO : 이거 필요없을 것 같은데 , 과거의 내가 왜 해논걸까?
-			if (line == null) {
-				return requestHeader.getRequestLine();
-			}
 		}
-		requestHeader.setRequestHeaders(requestHeaders);
 
-		return requestHeader.getRequestLine();
+		requestHeader.setRequestHeaders(requestHeaders);
 	}
 
 	private int getContentLength(String line) {
@@ -72,9 +66,9 @@ public class Request {
 		return Integer.parseInt(headerTokens[1].trim());
 	}
 
-	private void processHttpMethod(RequestLine requestLine) {
-		HttpMethod httpMethod = requestLine.getHttpMethod();
-		String url = requestLine.getUrl();
+	private void processHttpMethod(BufferedReader bufferedReader) throws IOException {
+		HttpMethod httpMethod = requestHeader.getRequestLine().getHttpMethod();
+		String url = requestHeader.getRequestLine().getUrl();
 
 		if (httpMethod.equals(HttpMethod.GET)) {
 			int indexOfQueryParameter = url.indexOf('?');
@@ -82,9 +76,10 @@ public class Request {
 				processQueryParameter(url, indexOfQueryParameter);
 			}
 		} else if (httpMethod.equals(HttpMethod.POST)) {
+			String rawBody = IOUtils.readData(bufferedReader, contentLength);
+			requestHeader.setBody(HttpRequestUtils.parseQueryString(rawBody));
 
 		}
-
 	}
 
 	private void processQueryParameter(String url, int indexOfQueryParameter) {

@@ -1,6 +1,7 @@
 package webserver.domain;
 
 import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,7 +11,7 @@ public class RequestHeader {
 
 	private RequestLine requestLine;
 	private List<String> requestHeaders;
-	private List<String> body;
+	private Map<String, String> body;
 
 	public void makeRequestLine(String startLine) {
 		String[] requestLine = startLine.split(" ");

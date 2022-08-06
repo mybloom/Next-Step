@@ -5,6 +5,9 @@ import java.io.IOException;
 
 public class IOUtils {
     /**
+     * int read(char[] cbuf, int off, int len)      *
+     * 인수로 들어간 cbuf의 문자열에서, off(=offset) 부터 len만큼의 문자열을 읽습니다.
+     *
      * @param BufferedReader는
      *            Request Body를 시작하는 시점이어야
      * @param contentLength는
