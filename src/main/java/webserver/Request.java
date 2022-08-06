@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import lombok.Getter;
 import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,26 +20,28 @@ import util.IOUtils;
 import webserver.domain.HttpMethod;
 import webserver.domain.RequestHeader;
 import webserver.domain.RequestLine;
+import webserver.domain.ResponseHeader;
 
+@Getter
 public class Request {
 
 	private static final Logger log = LoggerFactory.getLogger(RequestHandler.class);
 
-	private RequestHeader requestHeader;
+	private RequestHeader requestHeader = new RequestHeader();
+	private ResponseHeader responseHeader = new ResponseHeader();
 	private int contentLength = 0;
 
-	public RequestLine handleUserRequest(InputStream in) throws IOException {
+	public ResponseHeader handleUserRequest(InputStream in) throws IOException {
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(in));
 
 		parseHeader(bufferedReader);
-		processHttpMethod(bufferedReader);
+		ResponseHeader responseHeader = processHttpMethod(bufferedReader);
 
-		return requestHeader.getRequestLine();
+		return responseHeader;
 	}
 
 	private void parseHeader(BufferedReader bufferedReader)
 		throws IOException {
-		requestHeader = new RequestHeader();
 
 		//1.RequestLine
 		String line = bufferedReader.readLine();
@@ -66,7 +69,7 @@ public class Request {
 		return Integer.parseInt(headerTokens[1].trim());
 	}
 
-	private void processHttpMethod(BufferedReader bufferedReader) throws IOException {
+	private ResponseHeader processHttpMethod(BufferedReader bufferedReader) throws IOException {
 		HttpMethod httpMethod = requestHeader.getRequestLine().getHttpMethod();
 		String url = requestHeader.getRequestLine().getUrl();
 
@@ -78,9 +81,9 @@ public class Request {
 		} else if (httpMethod.equals(HttpMethod.POST)) {
 			String rawBody = IOUtils.readData(bufferedReader, contentLength);
 			requestHeader.setBody(HttpRequestUtils.parseQueryString(rawBody));
+			Map<String, String> body = requestHeader.getBody();
 
 			if ("/user/create".equals(url)) {
-				Map<String, String> body = requestHeader.getBody();
 				User user = new User(body.get("userId"), body.get("password"), body.get("name"),
 					body.get("email"));
 
@@ -88,8 +91,17 @@ public class Request {
 				DataBase.findAll().stream()
 					.forEach(userInDatabase -> log.debug("**Database.findAll() : {}",
 						userInDatabase.toString()));
+			} else if ("/user/login".equals(url)) {
+				User user = DataBase.findUserById(body.get("userId"));
+				if (user.getPassword().equals(body.get("password"))) {
+					responseHeader.setResponseHeaders(List.of("Set-Cookie: logined=true"+ "\r\n"));
+				}else{
+					responseHeader.setResponseHeaders(List.of("Set-Cookie: logined=false"+ "\r\n"));
+				}
 			}
 		}
+
+		return responseHeader;
 	}
 
 	private void processQueryParameter(String url, int indexOfQueryParameter) {

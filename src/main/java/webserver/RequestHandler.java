@@ -8,6 +8,7 @@ import java.net.Socket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webserver.domain.RequestLine;
+import webserver.domain.ResponseHeader;
 
 
 public class RequestHandler extends Thread {
@@ -28,8 +29,8 @@ public class RequestHandler extends Thread {
 
 		try (InputStream in = connection.getInputStream(); OutputStream out = connection.getOutputStream()) {
 			// TODO 사용자 요청에 대한 처리는 이 곳에 구현하면 된다.
-			RequestLine requestLine = request.handleUserRequest(in);
-			response.makeResponse(requestLine.getUrl(), out);
+			ResponseHeader responseHeader = request.handleUserRequest(in);
+			response.makeResponse(request.getRequestHeader().getRequestLine().getUrl(), responseHeader, out);
 
 		} catch (IOException e) {
 			log.error(e.getMessage());
