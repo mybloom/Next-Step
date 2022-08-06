@@ -38,7 +38,7 @@ public class Request {
 
 	private void parseHeader(BufferedReader bufferedReader)
 		throws IOException {
-		RequestHeader requestHeader = new RequestHeader();
+		requestHeader = new RequestHeader();
 
 		//1.RequestLine
 		String line = bufferedReader.readLine();
@@ -52,7 +52,7 @@ public class Request {
 			line = bufferedReader.readLine();
 			log.debug("requestHeader: {}", line);
 
-			if (line.equals("Content-Length")) {
+			if (line.contains("Content-Length")) {
 				contentLength = getContentLength(line);
 			}
 			requestHeaders.add(line);
@@ -79,6 +79,16 @@ public class Request {
 			String rawBody = IOUtils.readData(bufferedReader, contentLength);
 			requestHeader.setBody(HttpRequestUtils.parseQueryString(rawBody));
 
+			if ("/user/create".equals(url)) {
+				Map<String, String> body = requestHeader.getBody();
+				User user = new User(body.get("userId"), body.get("password"), body.get("name"),
+					body.get("email"));
+
+				DataBase.addUser(user);
+				DataBase.findAll().stream()
+					.forEach(userInDatabase -> log.debug("**Database.findAll() : {}",
+						userInDatabase.toString()));
+			}
 		}
 	}
 
