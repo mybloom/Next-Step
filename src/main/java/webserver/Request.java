@@ -93,10 +93,17 @@ public class Request {
 						userInDatabase.toString()));
 			} else if ("/user/login".equals(url)) {
 				User user = DataBase.findUserById(body.get("userId"));
+				if (user == null) {
+					responseHeader.setResponseHeaders(
+						List.of("Set-Cookie: logined=false" + "\r\n"));
+					return responseHeader;
+				}
+
 				if (user.getPassword().equals(body.get("password"))) {
-					responseHeader.setResponseHeaders(List.of("Set-Cookie: logined=true"+ "\r\n"));
-				}else{
-					responseHeader.setResponseHeaders(List.of("Set-Cookie: logined=false"+ "\r\n"));
+					responseHeader.setResponseHeaders(List.of("Set-Cookie: logined=true" + "\r\n"));
+				} else {
+					responseHeader.setResponseHeaders(
+						List.of("Set-Cookie: logined=false" + "\r\n"));
 				}
 			}
 		}

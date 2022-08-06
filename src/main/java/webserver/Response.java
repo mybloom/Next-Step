@@ -28,7 +28,14 @@ public class Response {
 		} else if (url.equals("/user/create")) {
 			response302Header(dos, "/index.html");
 		} else if (url.equals("/user/login")) {
+			if (responseHeader.getResponseHeaders().get(0).contains("logined:false")) {
+				body = makeRequestBody("/user/login_failed.html");
+				response200Header(dos, body.length);
+			}
 			response302Header(dos, "/index.html", responseHeader.getResponseHeaders().get(0));
+		} else if (url.contains(".css")) {
+			body = makeRequestBody(url);
+			responseCss200Header(dos, body.length);
 		} else {
 			body = "Hello World".getBytes();
 		}
@@ -55,6 +62,17 @@ public class Response {
 			dos.writeBytes("Content-Type: text/html;charset=utf-8\r\n");
 			dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
 			dos.writeBytes(loginCookie);
+			dos.writeBytes("\r\n");
+		} catch (IOException e) {
+			log.error(e.getMessage());
+		}
+	}
+
+	private void responseCss200Header(DataOutputStream dos, int lengthOfBodyContent) {
+		try {
+			dos.writeBytes("HTTP/1.1 200 OK \r\n");
+			dos.writeBytes("Content-Type: text/css\r\n");
+			dos.writeBytes("Content-Length: " + lengthOfBodyContent + "\r\n");
 			dos.writeBytes("\r\n");
 		} catch (IOException e) {
 			log.error(e.getMessage());
