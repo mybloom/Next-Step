@@ -48,6 +48,9 @@ dependencies {
     implementation 'com.google.guava:guava:31.1-jre'
     implementation 'org.apache.ant:ant:1.10.12'
 
+    //lombok
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.24'
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.24'
 }
 
 test {
