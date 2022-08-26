@@ -34,6 +34,7 @@ public class WebServerLauncher {
 
         ctx.setResources(resources);
         tomcat.start();
+        logger.info("**tomcat시작: {} " + tomcat.getServer().getCatalinaHome());
         tomcat.getServer().await();
     }
 }
