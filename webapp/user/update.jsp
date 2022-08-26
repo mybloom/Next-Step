@@ -79,17 +79,21 @@
                         <a class="thumbnail pull-left" href="#">
                             <img class="media-object" src="../images/80-text.png">
                         </a>
-                        <div class="media-body">
-                            <h4 class="media-heading">
-                               ${user.name}
-                            </h4>
-                            <p>
-                                <a href="#" class="btn btn-xs btn-default">
-                                    <span class="glyphicon glyphicon-envelope"></span>&nbsp;
-                                    ${user.email}
-                                </a>
-                            </p>
-                        </div>
+                        <form name="question" method="post" action="/user/update">
+                            <input type="hidden" id="userId" name="userId" value="${user.userId}">
+                            <div class="media-body">
+                                <h4 class="media-heading">
+                                    <input class="form-control" id="name" name="name" placeholder="${user.name}">
+                                </h4>
+                                <p>
+                                    <a href="#" class="btn btn-xs btn-default">
+                                        <span class="glyphicon glyphicon-envelope"></span>&nbsp;
+                                        <input class="form-control" id="email" name="email" placeholder="${user.email}">
+                                    </a>
+                                </p>
+                            </div>
+                            <button type="submit" class="btn btn-success clearfix pull-right">회원 수정</button>
+                        </form>
                     </div>
                 </div>
             </div>
