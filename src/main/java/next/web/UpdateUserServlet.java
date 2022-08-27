@@ -27,7 +27,7 @@ public class UpdateUserServlet extends HttpServlet {
 
 		isLoginUser(req, resp);
 
-		req.setAttribute("user", DataBase.findUserById(req.getParameter("userId")));
+		req.setAttribute("user", DataBase.findUserById(req.getParameter("userId")).get());
 		RequestDispatcher rd = req.getRequestDispatcher("/user/update.jsp");
 		rd.forward(req, resp);
 	}
@@ -62,7 +62,7 @@ public class UpdateUserServlet extends HttpServlet {
 
 		//todo: userViaSession이 null이면 if 조건절이 에러나고 그 다음 줄 실행이 안된다.
 		if (!userId.equals(userViaSession.getUserId())) {
-			throw new SecurityException("로그인한 사용자만 접근할 수 있습니다.");
+			throw new SecurityException("본인의 계정정보만 접근할 수 있습니다.");
 		}
 	}
 }

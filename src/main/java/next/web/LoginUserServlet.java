@@ -2,7 +2,7 @@ package next.web;
 
 import core.db.DataBase;
 import java.io.IOException;
-import javax.servlet.RequestDispatcher;
+import java.util.NoSuchElementException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -15,7 +15,8 @@ import next.model.User;
 @Slf4j
 @WebServlet("/user/login")
 public class LoginUserServlet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
+
+	private static final long serialVersionUID = 1L;
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -23,9 +24,10 @@ public class LoginUserServlet extends HttpServlet {
         String password = req.getParameter("password");
 
         DataBase.existUser(userId, password);
+		User user = DataBase.findUserById(userId)
+			.orElseThrow(() -> new NoSuchElementException("등록된 회원이 아닙니다"));
 
         HttpSession session = req.getSession();
-        User user = DataBase.findUserById(userId);
         session.setAttribute("user", user);
         resp.sendRedirect("/user/list");
     }
