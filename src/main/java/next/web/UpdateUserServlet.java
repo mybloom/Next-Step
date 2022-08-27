@@ -24,12 +24,7 @@ public class UpdateUserServlet extends HttpServlet {
 		throws ServletException, IOException {
 		String userId = req.getParameter("userId");
 
-		HttpSession session = req.getSession();
-		User user = (User) session.getAttribute("user");
-
-		if (!userId.equals(user.getUserId())) {
-			RequestDispatcher rd = req.getRequestDispatcher("/user/list");
-			rd.forward(req, resp);
+		if (!isTheLoginUser(req, resp, userId)) {
 			return;
 		}
 
@@ -45,11 +40,28 @@ public class UpdateUserServlet extends HttpServlet {
 		String name = req.getParameter("name");
 		String email = req.getParameter("email");
 
+		if (!isTheLoginUser(req, resp, userId)) {
+			return;
+		}
+
 		User user = DataBase.findUserById(userId);
 		log.debug("**existing user data : {} ", user);
 		user.update(name, email);
 		log.debug("**modified user data : {} ", user);
 
 		resp.sendRedirect("/user/list");
+	}
+
+	private boolean isTheLoginUser(HttpServletRequest req, HttpServletResponse resp,
+		String userId) throws ServletException, IOException {
+
+		HttpSession session = req.getSession();
+		//todo: User로 캐스팅하기 전에 null 체크가 필요할 것 같다. 맞나?
+		User userViaSession = (User) session.getAttribute("user");
+
+		if (!userId.equals(userViaSession.getUserId())) {
+			return false;
+		}
+		return true;
 	}
 }
