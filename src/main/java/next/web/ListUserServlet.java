@@ -20,19 +20,18 @@ public class ListUserServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 		throws ServletException, IOException {
-		RequestDispatcher rd = null;
 
 		HttpSession session = req.getSession();
 		Object value = session.getAttribute("user");
 
 		//TODO :  Optional 로 수정
 		if (value == null) {
-			resp.sendRedirect("/user/login.html");
+			resp.sendRedirect("/user/login.jsp");
 			return;
 		}
 
 		req.setAttribute("users", DataBase.findAll());
-		rd = req.getRequestDispatcher("/user/list.jsp");
+		RequestDispatcher rd = req.getRequestDispatcher("/user/list.jsp");
 		rd.forward(req, resp);
 	}
 }
