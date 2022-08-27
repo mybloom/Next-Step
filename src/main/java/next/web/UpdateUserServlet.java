@@ -2,6 +2,8 @@ package next.web;
 
 import core.db.DataBase;
 import java.io.IOException;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -22,13 +24,10 @@ public class UpdateUserServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 		throws ServletException, IOException {
-		String userId = req.getParameter("userId");
 
-		if (!isTheLoginUser(req, resp, userId)) {
-			return;
-		}
+		isLoginUser(req, resp);
 
-		req.setAttribute("user", DataBase.findUserById(userId));
+		req.setAttribute("user", DataBase.findUserById(req.getParameter("userId")));
 		RequestDispatcher rd = req.getRequestDispatcher("/user/update.jsp");
 		rd.forward(req, resp);
 	}
@@ -40,11 +39,10 @@ public class UpdateUserServlet extends HttpServlet {
 		String name = req.getParameter("name");
 		String email = req.getParameter("email");
 
-		if (!isTheLoginUser(req, resp, userId)) {
-			return;
-		}
+		isLoginUser(req, resp);
 
-		User user = DataBase.findUserById(userId);
+		User user = DataBase.findUserById(userId)
+			.orElseThrow(() -> new NoSuchElementException("해당 사용자 정보가 없습니다."));
 		log.debug("**existing user data : {} ", user);
 		user.update(name, email);
 		log.debug("**modified user data : {} ", user);
@@ -52,16 +50,19 @@ public class UpdateUserServlet extends HttpServlet {
 		resp.sendRedirect("/user/list");
 	}
 
-	private boolean isTheLoginUser(HttpServletRequest req, HttpServletResponse resp,
-		String userId) throws ServletException, IOException {
+	private void isLoginUser(HttpServletRequest req, HttpServletResponse resp)
+		throws ServletException, IOException {
+		String userId = req.getParameter("userId");
 
 		HttpSession session = req.getSession();
-		//todo: User로 캐스팅하기 전에 null 체크가 필요할 것 같다. 맞나?
-		User userViaSession = (User) session.getAttribute("user");
+		//todo: User로 캐스팅하기 전에 null 체크가 필요할 것 같다. 맞나? null을 cast해도 되긴 하는듯. 뭘 하는거지?
+		//(User) session.getAttribute("user");
+		User userViaSession = Optional.ofNullable((User) session.getAttribute("user"))
+			.orElseThrow(() -> new SecurityException("로그인한 사용자만 접근할 수 있습니다."));
 
+		//todo: userViaSession이 null이면 if 조건절이 에러나고 그 다음 줄 실행이 안된다.
 		if (!userId.equals(userViaSession.getUserId())) {
-			return false;
+			throw new SecurityException("로그인한 사용자만 접근할 수 있습니다.");
 		}
-		return true;
 	}
 }
