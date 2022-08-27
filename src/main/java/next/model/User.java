@@ -1,6 +1,5 @@
 package next.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -24,7 +23,6 @@ public class User {
 		this.name = name;
 		this.email = email;
 	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
