@@ -25,8 +25,17 @@
                         <td>${user.userId}</td>
                         <td>${user.name}</td>
                         <td>${user.email}</td>
-                        <td><a href="/user/update?userId=${user.userId}" class="btn btn-success" role="button">수정</a>
-                        </td>
+                        <c:set var="userIdViaSession" value="${sessionScope.user.userId}" />
+                        <c:set var="userId" value="${user.userId}" />
+                        <c:choose>
+                            <c:when test="${userIdViaSession eq userId}">
+                            <td><a href="/user/update?userId=${user.userId}" class="btn btn-success" role="button">수정</a></td>
+                            </c:when>
+                            <c:otherwise>
+                                <td></td>
+                            </c:otherwise>
+                        </c:choose>
+
                     </tr>
                 </c:forEach>
                 </tbody>
