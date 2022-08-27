@@ -8,6 +8,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import next.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,16 @@ public class UpdateUserServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 		throws ServletException, IOException {
 		String userId = req.getParameter("userId");
+
+		HttpSession session = req.getSession();
+		User user = (User) session.getAttribute("user");
+
+		if (!userId.equals(user.getUserId())) {
+			RequestDispatcher rd = req.getRequestDispatcher("/user/list");
+			rd.forward(req, resp);
+			return;
+		}
+
 		req.setAttribute("user", DataBase.findUserById(userId));
 		RequestDispatcher rd = req.getRequestDispatcher("/user/update.jsp");
 		rd.forward(req, resp);
@@ -35,9 +46,9 @@ public class UpdateUserServlet extends HttpServlet {
 		String email = req.getParameter("email");
 
 		User user = DataBase.findUserById(userId);
-		log.debug("**existing user data : {} " , user);
+		log.debug("**existing user data : {} ", user);
 		user.update(name, email);
-		log.debug("**modified user data : {} " , user);
+		log.debug("**modified user data : {} ", user);
 
 		resp.sendRedirect("/user/list");
 	}
