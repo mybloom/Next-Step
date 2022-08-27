@@ -83,12 +83,12 @@
                             <input type="hidden" id="userId" name="userId" value="${user.userId}">
                             <div class="media-body">
                                 <h4 class="media-heading">
-                                    <input class="form-control" id="name" name="name" placeholder="${user.name}">
+                                    <input class="form-control" id="name" name="name" value="${user.name}" placeholder="${user.name}">
                                 </h4>
                                 <p>
                                     <a href="#" class="btn btn-xs btn-default">
                                         <span class="glyphicon glyphicon-envelope"></span>&nbsp;
-                                        <input class="form-control" id="email" name="email" placeholder="${user.email}">
+                                        <input class="form-control" id="email" name="email" value="${user.email}" placeholder="${user.email}">
                                     </a>
                                 </p>
                             </div>
